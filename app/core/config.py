@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     AWS_ACCESS_KEY_ID: str = "test-access-key"
     AWS_SECRET_ACCESS_KEY: str = "test-secret-key"
     AWS_DEFAULT_REGION: str = "us-east-1"
+    API_GATEWAY_BASE_PATH: str = ""
+
+    # Logging
+    LOG_LEVEL: str = "INFO"
+    DISABLE_LOGGERS: bool = False
 
 
 settings = Settings()
