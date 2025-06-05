@@ -27,7 +27,7 @@ async def get_current_user(settings: SettingsDep):
     """
     try:
         user = UserRead(
-            username="test_user"
+            username="test_user2s"
         )
         return user
     except Exception as e:
