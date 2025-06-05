@@ -9,6 +9,12 @@ __pycache__/
 # VSCode
 .vscode/
 
+# all __init__.py files
+**/__init__.py
+tests/__init__.py
+tests/integration/__init__.py
+tests/unit/__init__.py
+
 # C extensions
 *.so
 
