@@ -34,9 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - run: |
+          pip install -r requirements.txt
           # trigger the tests here
           echo 'Running unit tests'
-          pip3 install pytest pytest-mock
           python3 -m pytest tests/unit
 
   delete-feature:
