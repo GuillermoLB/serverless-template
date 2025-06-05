@@ -63,8 +63,11 @@ def apigw_event():
 
 
 def test_lambda_handler(apigw_event):
-
+    # Modify the request to hit a route that exists in your app
+    apigw_event["path"] = "/your-existing-path"
+    apigw_event["pathParameters"]["proxy"] = "/your-existing-path"
+    
     ret = main.lambda_handler(apigw_event, "")
     data = json.loads(ret["body"])
-
+    
     assert ret["statusCode"] == 200
