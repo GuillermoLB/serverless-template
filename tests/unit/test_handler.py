@@ -11,15 +11,18 @@ def apigw_event():
 
     return {
         "body": '{ "test": "body"}',
+        # Change the resource to match your API structure
         "resource": "/{proxy+}",
         "requestContext": {
             "resourceId": "123456",
             "apiId": "1234567890",
             "resourcePath": "/{proxy+}",
-            "httpMethod": "POST",
+            # Change the HTTP method if needed (GET, POST, PUT, etc.)
+            "httpMethod": "GET",  # Changed to GET if that's what your API expects
             "requestId": "c6af9ac6-7b61-11e6-9a41-93e8deadbeef",
             "accountId": "123456789012",
             "identity": {
+                # Identity details remain the same
                 "apiKey": "",
                 "userArn": "",
                 "cognitoAuthenticationType": "",
@@ -34,8 +37,10 @@ def apigw_event():
             },
             "stage": "prod",
         },
+        # Update query parameters if needed
         "queryStringParameters": {"foo": "bar"},
         "headers": {
+            # Headers can remain the same
             "Via": "1.1 08f323deadbeefa7af34d5feb414ce27.cloudfront.net (CloudFront)",
             "Accept-Language": "en-US,en;q=0.8",
             "CloudFront-Is-Desktop-Viewer": "true",
@@ -55,19 +60,19 @@ def apigw_event():
             "CloudFront-Forwarded-Proto": "https",
             "Accept-Encoding": "gzip, deflate, sdch",
         },
-        "pathParameters": {"proxy": "/examplepath"},
-        "httpMethod": "POST",
+        # Update path parameters to match your route structure
+        "pathParameters": {"proxy": "/"},  # Changed to root path
+        # Match the HTTP method with the one above
+        "httpMethod": "GET",  # Changed to GET
         "stageVariables": {"baz": "qux"},
-        "path": "/examplepath",
+        # Update the path to match an existing endpoint in your FastAPI app
+        "path": "/",  # Changed to root path
     }
 
 
 def test_lambda_handler(apigw_event):
-    # Modify the request to hit a route that exists in your app
-    apigw_event["path"] = "/your-existing-path"
-    apigw_event["pathParameters"]["proxy"] = "/your-existing-path"
-    
+
     ret = main.lambda_handler(apigw_event, "")
     data = json.loads(ret["body"])
-    
+
     assert ret["statusCode"] == 200
