@@ -94,4 +94,4 @@ def lambda_handler(event, context):
 
 @app.get("/")
 def health_check():
-    return {"status": "OK2"}
+    return {"status": "OK"}
