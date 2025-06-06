@@ -196,8 +196,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          # trigger the integration tests here
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Assume the testing pipeline user role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.TESTING_REGION }}
+          role-to-assume: ${{ env.TESTING_PIPELINE_EXECUTION_ROLE }}
+          role-session-name: testing-integration
+          role-duration-seconds: 3600
+          role-skip-session-tagging: true
+      
+      - name: Run integration tests
+        env:
+          AWS_SAM_STACK_NAME: ${{ env.TESTING_STACK_NAME }}
+        run: |
+          echo "Running integration tests against $AWS_SAM_STACK_NAME stack"
+          python -m pytest tests/integration -v
 
   deploy-prod:
     if: github.ref == 'refs/heads/main'
