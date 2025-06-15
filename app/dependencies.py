@@ -14,4 +14,15 @@ def get_settings():
     return settings
 
 
+region_name = get_settings().AWS_REGION
+
+
+def get_s3():
+    return boto3.client("s3")
+
+
+def get_sqs_client():
+    return boto3.client("sqs", region_name=region_name)
+
+
 SettingsDep = Annotated[Settings, Depends(get_settings)]

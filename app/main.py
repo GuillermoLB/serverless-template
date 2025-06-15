@@ -3,6 +3,7 @@ import logging.config  # <-- Add this line
 import time
 from uuid import uuid4
 
+from app.flows.handler import handle_sqs_event
 from fastapi import FastAPI, Request
 from mangum import Mangum
 
@@ -83,13 +84,14 @@ def lambda_handler(event, context):
         Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
     """
 
-    # Use the logger you've defined
-    logger.debug(f"API Event: {event}")
-
-    # Rest of your handler code...
-    handler = Mangum(app, api_gateway_base_path=settings.API_GATEWAY_BASE_PATH)
-    response = handler(event, context)
-    return response
+    if "Records" in event:
+        handle_sqs_event(event, context)
+    elif "requestContext" in event:
+        logger.debug(f"API Event: {event}")
+        asgi_handler = Mangum(
+            app, api_gateway_base_path=settings.API_GATEWAY_BASE_PATH)
+        response = asgi_handler(event, context)
+        return response
 
 
 @app.get("/")

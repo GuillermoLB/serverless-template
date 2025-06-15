@@ -29,6 +29,11 @@ Resources:
           Properties:
             Path: /{proxy+}
             Method: any
+        EventToProcess:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt EventToProcess.Arn
+            BatchSize: 1
       Environment:
         Variables:
           POSTGRES_SERVER: db
@@ -40,6 +45,63 @@ Resources:
       Dockerfile: Lambda.Dockerfile
       DockerContext: app
       DockerTag: latest
+  EventToProcess:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 345600
+  Files:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-files-${AWS::AccountId}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: alias/aws/s3
+      PublicAccessBlockConfiguration:
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: s3:ObjectCreated:*
+            Queue: !GetAtt EventToProcess.Arn
+          - Event: s3:ObjectRemoved:*
+            Queue: !GetAtt EventToProcess.Arn
+    DependsOn:
+      - FilesToEventToProcessPermission
+  FilesBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref Files
+      PolicyDocument:
+        Id: RequireEncryptionInTransit
+        Version: '2012-10-17'
+        Statement:
+          - Principal: '*'
+            Action: '*'
+            Effect: Deny
+            Resource:
+              - !GetAtt Files.Arn
+              - !Sub ${Files.Arn}/*
+            Condition:
+              Bool:
+                aws:SecureTransport: 'false'
+  FilesToEventToProcessPermission:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action: sqs:SendMessage
+            Resource: !GetAtt EventToProcess.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub arn:${AWS::Partition}:s3:::${AWS::StackName}-files-${AWS::AccountId}
+      Queues:
+        - !Ref EventToProcess
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
